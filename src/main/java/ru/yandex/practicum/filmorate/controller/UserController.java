@@ -14,7 +14,7 @@ import java.util.Map;
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
-    private Map<Long, User> users = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
 
     @GetMapping
     public Collection<User> getUser() {
@@ -24,7 +24,7 @@ public class UserController {
 
     @PostMapping
     public User newUser(@RequestBody User user) {
-        log.info("Попытка создать нового пользователся: email={}, login={}", user.getEmail(), user.getLogin());
+        log.info("Попытка создать нового пользователя: email={}, login={}", user.getEmail(), user.getLogin());
         if (user.getEmail() == null || !user.getEmail().contains("@")) {
             log.warn("Некорректный email при создании пользователя: {}", user.getEmail());
             throw new ValidationException("Почта не может быть пустой и должна содержать символ '@'");
