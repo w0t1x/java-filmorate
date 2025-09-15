@@ -2,10 +2,13 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.inteface.ReleaseDate;
+import ru.yandex.practicum.filmorate.inteface.UniqueFilmName;
 
 import java.time.LocalDate;
 
 @Data
+@UniqueFilmName
 public class Film {
     private Long id;
 
@@ -17,6 +20,7 @@ public class Film {
 
     @NotNull(message = "Дата релиза должна быть указана")
     @PastOrPresent(message = "Дата релиза не может быть в будущем")
+    @ReleaseDate
     private LocalDate releaseDate;
 
     @Positive(message = "Продолжительность фильма должна быть положительной")

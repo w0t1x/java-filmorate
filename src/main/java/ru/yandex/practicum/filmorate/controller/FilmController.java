@@ -4,8 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.validator.UniqueFilmNameValidator;
 
-import java.time.LocalDate;
+import jakarta.validation.Valid;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +15,11 @@ import java.util.Map;
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private Map<Long, Film> films = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
+
+    public FilmController() {
+        UniqueFilmNameValidator.setFilms(films);
+    }
 
     @GetMapping
     public Collection<Film> getFilm() {
@@ -23,81 +28,35 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film newFilm(@RequestBody Film film) {
+    public Film newFilm(@Valid @RequestBody Film film) {
         log.info("Попытка создать новый фильм: {}", film.getName());
-        if (film.getName() == null || film.getName().isBlank()) {
-            log.warn("Некорректное название фильма: {}", film.getName());
-            throw new ValidationException("Название фильма не может быть пустым");
-        }
-        if (film.getDescription() == null || film.getDescription().length() > 200) {
-            log.warn("Некорректное количество символов в описании: {}", film.getDescription());
-            throw new ValidationException("Описание не может превысить 200 символов");
-        }
-        if (LocalDate.of(1895, 12, 28).isAfter(film.getReleaseDate())) {
-            log.warn("Некорректная дата: {}", film.getReleaseDate());
-            throw new ValidationException("Релиз фильма не может быть раньше 28 декабря 1895 года");
-        }
-        if (film.getDuration() == null || film.getDuration() < 1) {
-            log.warn("Некорректное количество продолжительности фильма: {}", film.getDuration());
-            throw new ValidationException("продолжительность фильма не может быть отрицательным числом или нулевым.");
-        }
 
         film.setId(generateId());
         films.put(film.getId(), film);
-        log.info("Фильм успешно создан: id={}, name={}, description={}, releaseDate={}, duration={}.", film.getId(), film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
+        log.info("Фильм успешно создан: id={}, name={}, description={}, releaseDate={}, duration={}.",
+                film.getId(), film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
         return film;
     }
 
     @PutMapping
-    public Film createFilm(@RequestBody Film newFilm) {
+    public Film createFilm(@Valid @RequestBody Film newFilm) {
         log.info("Попытка обновления фильма с id={}", newFilm.getId());
-        if (newFilm.getId() == null) {
-            log.error("Получен запрос на обновление без id={}", newFilm);
-            throw new ValidationException("Id должен быть указан");
+
+        if (!films.containsKey(newFilm.getId())) {
+            log.warn("Попытка обновить несуществующего фильма с id={}", newFilm.getId());
+            throw new ValidationException("Фильм с id = " + newFilm.getId() + " не найден");
         }
-        if (films.containsKey(newFilm.getId())) {
-            Film oldFilm = films.get(newFilm.getId());
 
-            if (newFilm.getDescription() != null) {
-                if (newFilm.getDescription().length() > 200) {
-                    log.warn("Некорректное количество символов в описании: {}", newFilm.getDescription());
-                    throw new ValidationException("Описание не может превышать 200 символов");
-                }
-                oldFilm.setDescription(newFilm.getDescription());
-            }
+        Film oldFilm = films.get(newFilm.getId());
+        oldFilm.setName(newFilm.getName());
+        oldFilm.setDescription(newFilm.getDescription());
+        oldFilm.setReleaseDate(newFilm.getReleaseDate());
+        oldFilm.setDuration(newFilm.getDuration());
 
-            if (newFilm.getReleaseDate() != null) {
-                if (LocalDate.of(1895, 12, 28).isAfter(newFilm.getReleaseDate())) {
-                    log.warn("Некорректная дата: {}", newFilm.getReleaseDate());
-                    throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
-                }
-                oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            }
-
-            if (newFilm.getDuration() != null) {
-                if (newFilm.getDuration() < 1) {
-                    log.warn("Некорректное количество продолжительности фильма: {}", newFilm.getDuration());
-                    throw new ValidationException("Продолжительность фильма должна быть положительным числом или нулевым.");
-                }
-                oldFilm.setDuration(newFilm.getDuration());
-            }
-
-            if (newFilm.getName() != null && !newFilm.getName().isBlank()) {
-                boolean existsName = films.values().stream()
-                        .anyMatch(film -> !film.getId().equals(newFilm.getId()) && film.getName().equals(newFilm.getName()));
-                if (existsName) {
-                    log.warn("Некорректный выбор названия фильма: name={}", newFilm.getName());
-                    throw new ValidationException("Фильм с таким названием уже существует");
-                }
-                oldFilm.setName(newFilm.getName());
-            }
-
-            films.put(oldFilm.getId(), oldFilm);
-            log.info("Фильм успешно обновлён: id={}, name={}, description={}, releaseDate={}, duration={}.", newFilm.getId(), newFilm.getName(), newFilm.getDescription(), newFilm.getReleaseDate(), newFilm.getDuration());
-            return oldFilm;
-        }
-        log.warn("Попытка обновить несуществующего фильма с id={}", newFilm.getId());
-        throw new ValidationException("Пост с id = " + newFilm.getId() + " не найден");
+        films.put(oldFilm.getId(), oldFilm);
+        log.info("Фильм успешно обновлён: id={}, name={}, description={}, releaseDate={}, duration={}.",
+                newFilm.getId(), newFilm.getName(), newFilm.getDescription(), newFilm.getReleaseDate(), newFilm.getDuration());
+        return oldFilm;
     }
 
     private long generateId() {
