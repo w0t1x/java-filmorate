@@ -15,10 +15,6 @@ import java.util.Optional;
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
 
-//    public FilmController() {
-//        UniqueFilmNameValidator.setFilms(films);
-//    }
-
     public Collection<Film> getFilm() {
         log.debug("Запрос на получение всех фильмов. Количество: {}", films.size());
         return films.values();
