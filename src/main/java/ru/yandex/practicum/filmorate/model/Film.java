@@ -6,6 +6,8 @@ import ru.yandex.practicum.filmorate.inteface.ReleaseDate;
 import ru.yandex.practicum.filmorate.inteface.UniqueFilmName;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @UniqueFilmName
@@ -25,4 +27,6 @@ public class Film {
 
     @Positive(message = "Продолжительность фильма должна быть положительной")
     private Long duration;
+
+    private Set<Long> likes = new HashSet<>();
 }
