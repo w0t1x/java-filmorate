@@ -12,6 +12,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface UniqueFilmName {
     String message() default "Фильм с таким названием уже существует";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }
