@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.model.user;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -10,6 +10,7 @@ import java.util.Set;
 @Data
 public class User {
     private Long id;
+    private UserFriendship friendship;
 
     @NotBlank(message = "Email не может быть пустым")
     @Email(message = "Некорректный email")
