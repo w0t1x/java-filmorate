@@ -5,7 +5,6 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.inteface.ReleaseDate;
 import ru.yandex.practicum.filmorate.inteface.UniqueFilmName;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
-import ru.yandex.practicum.filmorate.model.FilmRating;
 
 import java.time.LocalDate;
 import java.util.HashSet;
